@@ -2,7 +2,9 @@ const {
   client,
   getAllUsers,
   createUser,
-  updateUser
+  updateUser,
+  createPost,
+  updatePost
 } = require('./index');
 
 // this function should call a query which drops all tables from our database
@@ -11,7 +13,9 @@ async function dropTables() {
     console.log("Starting to drop tables...");
 
     await client.query(`
+      DROP TABLE IF EXISTS posts;
       DROP TABLE IF EXISTS users;
+      
     `);
 
     console.log("Finished dropping tables!");
@@ -35,7 +39,15 @@ async function createTables() {
         location VARCHAR(255) NOT NULL,
         active BOOLEAN DEFAULT true
       );
+      CREATE TABLE posts (
+      id SERIAL PRIMARY KEY,
+      "authorId" INTEGER REFERENCES users(id) NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      content TEXT NOT NULL,
+      active BOOLEAN DEFAULT true
+      );
     `);
+
 
     console.log("Finished building tables!");
   } catch (error) {
@@ -66,6 +78,7 @@ async function rebuildDB() {
     await dropTables();
     await createTables();
     await createInitialUsers();
+    await createPost();
   } catch (error) {
     throw error;
   }
