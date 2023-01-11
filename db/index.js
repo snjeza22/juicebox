@@ -105,6 +105,7 @@ async function updatePost(id, {
     throw error;
   }
 }
+
 module.exports = {
   client,
   createUser,
@@ -112,4 +113,4 @@ module.exports = {
   updateUser,
   createPost,
   updatePost
-}
+};
