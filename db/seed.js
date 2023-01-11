@@ -40,11 +40,11 @@ async function createTables() {
         active BOOLEAN DEFAULT true
       );
       CREATE TABLE posts (
-      id SERIAL PRIMARY KEY,
-      "authorId" INTEGER REFERENCES users(id) NOT NULL,
-      title VARCHAR(255) NOT NULL,
-      content TEXT NOT NULL,
-      active BOOLEAN DEFAULT true
+        id SERIAL PRIMARY KEY,
+        "authorId" INTEGER REFERENCES users(id) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        active BOOLEAN DEFAULT true
       );
     `);
 
@@ -71,6 +71,34 @@ async function createInitialUsers() {
   }
 }
 
+async function createInitialPosts() {
+  try {
+    const [albert, sandra, glamgal] = await getAllUsers();
+
+    const albertsPost = await createPost({
+      authorId: albert.id,
+      title: "First Post",
+      content: "This is my first post. I hope I love writing blogs as much as I love writing them."
+    });
+
+    const sandrasPost = await createPost({
+      authorId: sandra.id,
+      title: "Second Post",
+      content: "time to go get soup!!"
+    });
+
+    const glamgalPost = await createPost({
+      authorId: glamgal.id,
+      title: "Third Post",
+      content: "time to go get more soup!!"
+    });
+
+    console.log('POST', albertsPost);
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function rebuildDB() {
   try {
     client.connect();
@@ -78,11 +106,13 @@ async function rebuildDB() {
     await dropTables();
     await createTables();
     await createInitialUsers();
-    await createPost();
+    await createInitialPosts();
   } catch (error) {
     throw error;
   }
 }
+
+
 async function testDB() {
   try {
     console.log("Starting to test database...");

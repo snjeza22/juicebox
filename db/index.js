@@ -66,14 +66,13 @@ async function createPost({
 }) {
   try {
     const { rows } = await client.query(`
-      INSERT INTO posts (authorId, title, content) 
+      INSERT INTO posts ("authorId", title, content) 
       VALUES ($1, $2, $3)
-      ON CONFLICT (title) DO NOTHING 
+      ON CONFLICT (id) DO NOTHING 
       RETURNING *;
     `, [ authorId, title, content ]);
 
     return rows;
-
   } catch (error) {
     throw error;
   }
