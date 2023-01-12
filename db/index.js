@@ -83,7 +83,7 @@ async function updatePost(id, {
   content,
   active
 }) {
-  const setString = Object.keys(fields).map(
+  const setString = Object.keys({title, content, active}).map(
     (key, index) => `"${ key }"=$${ index + 1 }`
   ).join(', ');
 
@@ -93,18 +93,77 @@ async function updatePost(id, {
   }
 
   try {
-    const { rows: [ post ] } = await client.query(`
+    const { rows } = await client.query(`
       UPDATE posts
       SET ${ setString }
       WHERE id=${ id }
       RETURNING *;
-    `,Object.values(fields));
+    `,Object.values({title, content, active}));
 
-
+    return rows;
   } catch (error) {
     throw error;
   }
 }
+
+async function getAllPosts() {
+  try {
+    const { rows } = await client.query(
+      `SELECT id, "authorId", title, content 
+      FROM posts;
+    `);
+  
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getPostsByUser(userId) {
+
+  try {
+    const { rows } = await client.query(`
+      SELECT * FROM posts
+      WHERE "authorId"=${ userId };
+    `);
+
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getUserById(userId) {
+  try {
+    const { rows: [ user ] } = await client.query(`
+      SELECT id, username, name, location, active
+      FROM users
+      WHERE id=${ userId }
+    `);
+
+    if (!user) {
+      return null
+    }
+
+    user.posts = await getPostsByUser(userId);
+
+    return user;
+  } catch (error) {
+    throw error;
+  }
+}
+
+    // (1) an object that contains 
+    // (2) a `rows` array that (in this case) will contain 
+    // (3) one object, which is our user.
+  // if it doesn't exist (if there are no `rows` or `rows.length`), return null
+
+  // if it does:
+  // delete the 'password' key from the returned object
+  // get their posts (use getPostsByUser)
+  // then add the posts to the user object with key 'posts'
+  // return the user object
+
 
 module.exports = {
   client,
@@ -112,5 +171,8 @@ module.exports = {
   getAllUsers,
   updateUser,
   createPost,
-  updatePost
+  updatePost,
+  getAllPosts,
+  getPostsByUser,
+  getUserById
 };

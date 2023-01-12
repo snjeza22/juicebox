@@ -4,7 +4,10 @@ const {
   createUser,
   updateUser,
   createPost,
-  updatePost
+  updatePost,
+  getAllPosts,
+  getPostsByUser,
+  getUserById
 } = require('./index');
 
 // this function should call a query which drops all tables from our database
@@ -129,12 +132,24 @@ async function testDB() {
     });
     console.log("Result:", updateUserResult);
 
+    console.log("Calling updatePost on post[0]");
+
+    const posts = await getAllPosts();
+
+    const updatePostResult = await updatePost(posts[0].id, {
+      title: "Newname Sogood",
+      content: "Lesterville, KY"
+    });
+    console.log("Result:", updatePostResult);
+
+    console.log("getpost by user 1", await getPostsByUser(1));
+
+    console.log("getuserbyId by user 1", await getUserById(1));
+
     console.log("Finished database tests!");
     // queries are promises, so we can await them
-   // const result = await client.query(`SELECT * FROM users;`);
-    // const { rows } = await client.query(`SELECT * FROM users`)
     // for now, logging is a fine way to see what's up
-    //console.log(rows);
+    // console.log(rows);
   } catch (error) {
     console.error("Error testing database!");
     throw error;
