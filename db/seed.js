@@ -8,7 +8,8 @@ const {
   getAllPosts,
   getPostsByUser,
   getUserById,
-  createTags
+  createTags,
+  addTagsToPost
 } = require('./index');
 
 // this function should call a query which drops all tables from our database
@@ -46,19 +47,19 @@ async function createTables() {
         active BOOLEAN DEFAULT true
       );
       CREATE TABLE posts (
-        id SERIAL PRIMARY KEY,
+        id SERIAL PRIMARY KEY UNIQUE,
         "authorId" INTEGER REFERENCES users(id) NOT NULL,
         title VARCHAR(255) NOT NULL,
         content TEXT NOT NULL,
         active BOOLEAN DEFAULT true
       );
       CREATE TABLE tags (
-        id SERIAL PRIMARY KEY,
+        id SERIAL PRIMARY KEY UNIQUE,
         name VARCHAR(255) UNIQUE NOT NULL
       );
       CREATE TABLE post_tags (
-        "postId" INTEGER REFERENCES posts(id) UNIQUE NOT NULL,
-        "tagId" INTEGER REFERENCES tags(id) UNIQUE NOT NULL
+        "postId" INTEGER REFERENCES posts(id),
+        "tagId" INTEGER REFERENCES tags(id)
       );
     `);
 
@@ -113,12 +114,36 @@ async function createInitialPosts() {
   }
 }
 
-async function createInitialTags() {
-  console.log('creating initial tags!');
+// async function createInitialTags() {
+//   console.log('creating initial tags!');
 
- const tags = await createTags(["happy", "sad", "fun"]);
+//  const tags = await createTags(["happy", "sad", "fun"]);
   
-  console.log("done creating tags", tags);
+//   console.log("done creating tags", tags);
+// }
+
+async function createInitialTags() {
+  try {
+    console.log("Starting to create tags...");
+
+    const [happy, sad, inspo, catman] = await createTags([
+      '#happy', 
+      '#worst-day-ever', 
+      '#youcandoanything',
+      '#catmandoeverything'
+    ]);
+
+    const [postOne, postTwo, postThree] = await getAllPosts();
+
+    await addTagsToPost(postOne.id, [happy, inspo]);
+    await addTagsToPost(postTwo.id, [sad, inspo]);
+    await addTagsToPost(postThree.id, [happy, catman, inspo]);
+
+    console.log("Finished creating tags!");
+  } catch (error) {
+    console.log("Error creating tags!");
+    throw error;
+  }
 }
 
 async function rebuildDB() {
@@ -156,9 +181,12 @@ async function testDB() {
 
     const posts = await getAllPosts();
 
+    console.log('calling getAllPosts', posts)
+
     const updatePostResult = await updatePost(posts[0].id, {
       title: "Newname Sogood",
-      content: "Lesterville, KY"
+      content: "Lesterville, KY",
+      active: false
     });
     console.log("Result:", updatePostResult);
 
