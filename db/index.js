@@ -153,6 +153,50 @@ async function getUserById(userId) {
   }
 }
 
+async function createTags(tagList) {
+  if (tagList.length === 0) { 
+    return; 
+  }
+
+  // need something like: $1), ($2), ($3 
+  const insertValues = tagList.map(
+    (_, index) => `$${index + 1}`).join('), (');
+  // then we can use: (${ insertValues }) in our string template
+
+  // need something like $1, $2, $3
+  const selectValues = tagList.map(
+    (_, index) => `$${index + 1}`).join(', ');
+  // then we can use (${ selectValues }) in our string template
+  console.log(insertValues)
+  console.log(selectValues)
+  try {
+    const { rows: results } = await client.query(`
+      INSERT INTO tags (name) 
+      VALUES (${insertValues})
+      ON CONFLICT (name) DO NOTHING
+      RETURNING *;
+      `, tagList);
+
+      console.log(results, 'finished')
+      const { rows } = await client.query(`
+      SELECT * FROM tags
+      WHERE name
+      IN (${selectValues});
+      `, tagList);
+
+      console.log(rows, 'finished')
+
+    // insert the tags, doing nothing on conflict
+    // returning nothing, we'll query after
+
+    // select all tags where the name is in our taglist
+    // return the rows from the query
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
     // (1) an object that contains 
     // (2) a `rows` array that (in this case) will contain 
     // (3) one object, which is our user.
@@ -174,5 +218,6 @@ module.exports = {
   updatePost,
   getAllPosts,
   getPostsByUser,
-  getUserById
+  getUserById,
+  createTags
 };

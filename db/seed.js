@@ -7,7 +7,8 @@ const {
   updatePost,
   getAllPosts,
   getPostsByUser,
-  getUserById
+  getUserById,
+  createTags
 } = require('./index');
 
 // this function should call a query which drops all tables from our database
@@ -16,6 +17,8 @@ async function dropTables() {
     console.log("Starting to drop tables...");
 
     await client.query(`
+      DROP TABLE IF EXISTS post_tags;
+      DROP TABLE IF EXISTS tags;
       DROP TABLE IF EXISTS posts;
       DROP TABLE IF EXISTS users;
       
@@ -48,6 +51,14 @@ async function createTables() {
         title VARCHAR(255) NOT NULL,
         content TEXT NOT NULL,
         active BOOLEAN DEFAULT true
+      );
+      CREATE TABLE tags (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL
+      );
+      CREATE TABLE post_tags (
+        "postId" INTEGER REFERENCES posts(id) UNIQUE NOT NULL,
+        "tagId" INTEGER REFERENCES tags(id) UNIQUE NOT NULL
       );
     `);
 
@@ -102,6 +113,14 @@ async function createInitialPosts() {
   }
 }
 
+async function createInitialTags() {
+  console.log('creating initial tags!');
+
+ const tags = await createTags(["happy", "sad", "fun"]);
+  
+  console.log("done creating tags", tags);
+}
+
 async function rebuildDB() {
   try {
     client.connect();
@@ -110,6 +129,7 @@ async function rebuildDB() {
     await createTables();
     await createInitialUsers();
     await createInitialPosts();
+    await createInitialTags();
   } catch (error) {
     throw error;
   }
