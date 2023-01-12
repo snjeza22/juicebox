@@ -142,9 +142,13 @@ async function testDB() {
     });
     console.log("Result:", updatePostResult);
 
-    console.log("getpost by user 1", await getPostsByUser(1));
+    const albertsPosts = await getPostsByUser(1);
 
-    console.log("getuserbyId by user 1", await getUserById(1));
+    console.log("getpost by user 1", albertsPosts);
+
+    const albertsInfo = await getUserById(1);
+
+    console.log("getuserbyId by user 1", albertsInfo);
 
     console.log("Finished database tests!");
     // queries are promises, so we can await them
