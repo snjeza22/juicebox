@@ -228,7 +228,7 @@ async function createPostTag(postId, tagId) {
     await client.query(`
       INSERT INTO post_tags("postId", "tagId")
       VALUES ($1, $2)
-      ON CONFLICT DO NOTHING;
+      ON CONFLICT  DO NOTHING;
     `, [postId, tagId]);
   } catch (error) {
     throw error;
